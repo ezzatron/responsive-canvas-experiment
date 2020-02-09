@@ -46,7 +46,7 @@ function createResizeMonitor (viewport, canvas) {
   })
 
   return function monitorResize () {
-    const {clientWidth: width, clientHeight: height} = viewport
+    const {scrollWidth: width, scrollHeight: height} = viewport
 
     if (canvas.width === width && canvas.height === height) return
 
@@ -92,7 +92,7 @@ function createLoop (viewport, canvas, ctx) {
 
 function main () {
   const viewport = document.documentElement
-  const {clientWidth: width, clientHeight: height} = viewport
+  const {scrollWidth: width, scrollHeight: height} = viewport
 
   const canvas = document.createElement('canvas')
   canvas.width = width
