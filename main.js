@@ -3,18 +3,31 @@ window.addEventListener('DOMContentLoaded', main, {once: true})
 function update (state, elapsed) {
 }
 
+function draw (canvas, ctx) {
+  const {width, height} = canvas
+
+  ctx.fillStyle = 'paleturquoise'
+  ctx.fillRect(0, 0, width, height)
+
+  const minDimension = width > height ? height : width
+  const padding = minDimension / 10
+  const doublePadding = padding * 2
+  const quadPadding = padding * 4
+
+  ctx.fillStyle = 'honeydew'
+  ctx.fillRect(padding, padding, width - doublePadding, height - doublePadding)
+
+  ctx.fillStyle = 'mistyrose'
+  ctx.fillRect(doublePadding, doublePadding, width - quadPadding, height - quadPadding)
+}
+
 const RESIZE_TTL = 200
 const throttledResizeCanvas = throttle(RESIZE_TTL, resizeCanvas)
 
-function draw (canvas, ctx) {
-  const {width, height} = document.documentElement.getBoundingClientRect()
+function monitorViewport (viewport, canvas) {
+  const {clientWidth: width, clientHeight: height} = viewport
 
-  if (canvas.width !== width || canvas.height !== height) {
-    throttledResizeCanvas(width, height, canvas)
-  }
-
-  ctx.fillStyle = 'skyblue'
-  ctx.fillRect(0, 0, canvas.width, canvas.height)
+  if (canvas.width !== width || canvas.height !== height) throttledResizeCanvas(width, height, canvas)
 }
 
 function resizeCanvas (width, height, canvas) {
@@ -27,11 +40,9 @@ function resizeCanvas (width, height, canvas) {
   canvas.animate(
     [
       {
-        transformOrigin: 'center center',
         transform: `scale(${deltaWidth}, ${deltaHeight})`,
       },
       {
-        transformOrigin: 'center center',
         transform: 'none',
       },
     ],
@@ -42,7 +53,7 @@ function resizeCanvas (width, height, canvas) {
   )
 }
 
-function createLoop (canvas, ctx) {
+function createLoop (viewport, canvas, ctx) {
   const state = {}
   let previousTimestamp = -1
 
@@ -51,6 +62,7 @@ function createLoop (canvas, ctx) {
   function loop (timestamp) {
     const elapsed = previousTimestamp > 0 ? timestamp - previousTimestamp : 0
 
+    monitorViewport(viewport, canvas)
     update(state, elapsed)
     draw(canvas, ctx)
 
@@ -61,8 +73,11 @@ function createLoop (canvas, ctx) {
 
 function main () {
   const canvas = document.createElement('canvas')
+  canvas.style.display = 'block'
+  canvas.style.willChange = 'transform'
+
   const ctx = canvas.getContext('2d')
-  const loop = createLoop(canvas, ctx)
+  const loop = createLoop(document.documentElement, canvas, ctx)
 
   document.body.appendChild(canvas)
   window.requestAnimationFrame(loop)
