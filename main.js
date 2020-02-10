@@ -4,7 +4,7 @@ function update (state, elapsed) {
 }
 
 function draw (canvas, ctx) {
-  const {width, height} = canvas.getBoundingClientRect()
+  const {width, height} = canvas
 
   ctx.fillStyle = 'paleturquoise'
   ctx.fillRect(0, 0, width, height)
