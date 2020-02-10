@@ -22,12 +22,36 @@ function draw (canvas, ctx) {
 }
 
 function createResizeMonitor (viewport, canvas) {
-  let animation, timeoutId
-  let nextWidth = canvas.width
-  let nextHeight = canvas.height
+  let animation, seenWidth, seenHeight, timeSinceResize
 
-  const animateResize = debounce(400, (width, height, scaleX, scaleY) => {
-    if (animation) return
+  return function monitorResize (elapsed) {
+    const {scrollWidth: width, scrollHeight: height} = viewport
+
+    if (canvas.width === width && canvas.height === height) return
+
+    if (width === seenWidth && height === seenHeight) {
+      timeSinceResize += elapsed
+    } else {
+      timeSinceResize = 0
+      seenWidth = width
+      seenHeight = height
+    }
+
+    const deltaWidth = canvas.width / width
+    const deltaHeight = canvas.height / height
+    const isWidthIncreasing = deltaWidth < 1
+    const isHeightIncreasing = deltaHeight < 1
+    const needsAnimation = isWidthIncreasing || isHeightIncreasing
+
+    if (!isWidthIncreasing) canvas.width = width
+    if (!isHeightIncreasing) canvas.height = height
+
+    if (!needsAnimation || timeSinceResize < 400) return
+
+    const scaleX = deltaWidth > 1 ? 1 : deltaWidth
+    const scaleY = deltaHeight > 1 ? 1 : deltaHeight
+
+    if (animation) animation.cancel()
 
     canvas.width = width
     canvas.height = height
@@ -43,31 +67,6 @@ function createResizeMonitor (viewport, canvas) {
       },
     )
     animation.addEventListener('finish', () => { animation = null }, {once: true})
-  })
-
-  return function monitorResize () {
-    const {scrollWidth: width, scrollHeight: height} = viewport
-
-    if (canvas.width === width && canvas.height === height) return
-
-    const deltaWidth = canvas.width / width
-    const deltaHeight = canvas.height / height
-    const isWidthIncreasing = deltaWidth < 1
-    const isHeightIncreasing = deltaHeight < 1
-    const needsAnimation = isWidthIncreasing || isHeightIncreasing
-
-    if (!isWidthIncreasing) canvas.width = width
-    if (!isHeightIncreasing) canvas.height = height
-
-    if (!needsAnimation) return
-    if (nextWidth === width && nextHeight === height) return
-
-    nextWidth = width
-    nextHeight = height
-    const scaleX = deltaWidth > 1 ? 1 : deltaWidth
-    const scaleY = deltaHeight > 1 ? 1 : deltaHeight
-
-    animateResize(width, height, scaleX, scaleY)
   }
 }
 
@@ -81,7 +80,7 @@ function createLoop (viewport, canvas, ctx) {
   function loop (timestamp) {
     const elapsed = previousTimestamp > 0 ? timestamp - previousTimestamp : 0
 
-    monitorResize()
+    monitorResize(elapsed)
     update(state, elapsed)
     draw(canvas, ctx)
 
@@ -105,17 +104,4 @@ function main () {
 
   document.body.appendChild(canvas)
   window.requestAnimationFrame(loop)
-}
-
-function debounce (delay, fn) {
-  let timeoutId
-
-  return (...args) => {
-    if (timeoutId) clearTimeout(timeoutId)
-
-    timeoutId = setTimeout(() => {
-      fn(...args)
-      timeoutId = null
-    }, delay)
-  }
 }
