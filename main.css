@@ -6,6 +6,9 @@ body {
   height: 100vh;
   margin: 0;
   overflow: hidden;
+}
 
-  background-color: #333;
+#viewport {
+  height: 100%;
+  width: 100%;
 }

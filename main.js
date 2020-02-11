@@ -48,18 +48,11 @@ function createLoop (viewport, canvas, ctx) {
 }
 
 function main () {
-  const viewport = document.documentElement
-  const {scrollWidth: width, scrollHeight: height} = viewport
-
+  const viewport = document.getElementById('viewport')
   const canvas = document.createElement('canvas')
-  canvas.width = width
-  canvas.height = height
   canvas.style.display = 'block'
-  canvas.style.willChange = 'transform'
 
-  const ctx = canvas.getContext('2d')
-  const loop = createLoop(viewport, canvas, ctx)
+  viewport.appendChild(canvas)
 
-  document.body.appendChild(canvas)
-  window.requestAnimationFrame(loop)
+  window.requestAnimationFrame(createLoop(viewport, canvas, canvas.getContext('2d')))
 }
