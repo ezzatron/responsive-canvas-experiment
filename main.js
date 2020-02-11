@@ -22,51 +22,9 @@ function draw (canvas, ctx) {
 }
 
 function createResizeMonitor (viewport, canvas) {
-  let animation, seenWidth, seenHeight, timeSinceResize
-
   return function monitorResize (elapsed) {
-    const {scrollWidth: width, scrollHeight: height} = viewport
-
-    if (canvas.width === width && canvas.height === height) return
-
-    if (width === seenWidth && height === seenHeight) {
-      timeSinceResize += elapsed
-    } else {
-      timeSinceResize = 0
-      seenWidth = width
-      seenHeight = height
-    }
-
-    const deltaWidth = canvas.width / width
-    const deltaHeight = canvas.height / height
-    const isWidthIncreasing = deltaWidth < 1
-    const isHeightIncreasing = deltaHeight < 1
-    const needsAnimation = isWidthIncreasing || isHeightIncreasing
-
-    if (!isWidthIncreasing) canvas.width = width
-    if (!isHeightIncreasing) canvas.height = height
-
-    if (!needsAnimation || timeSinceResize < 400) return
-
-    const scaleX = deltaWidth > 1 ? 1 : deltaWidth
-    const scaleY = deltaHeight > 1 ? 1 : deltaHeight
-
-    if (animation) animation.cancel()
-
-    canvas.width = width
-    canvas.height = height
-
-    animation = canvas.animate(
-      [
-        {transform: `scale(${scaleX}, ${scaleY})`},
-        {transform: 'none'},
-      ],
-      {
-        duration: 200,
-        easing: 'ease-in-out',
-      },
-    )
-    animation.addEventListener('finish', () => { animation = null }, {once: true})
+    canvas.width = viewport.scrollWidth
+    canvas.height = viewport.scrollHeight
   }
 }
 
