@@ -23,8 +23,8 @@ function draw (canvas, ctx) {
 
 function createResizeMonitor (viewport, canvas) {
   return function monitorResize (elapsed) {
-    canvas.width = viewport.scrollWidth
-    canvas.height = viewport.scrollHeight
+    canvas.width = viewport.clientWidth
+    canvas.height = viewport.clientHeight
   }
 }
 
